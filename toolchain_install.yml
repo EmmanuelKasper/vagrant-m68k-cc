@@ -3,3 +3,26 @@
   tasks: 
   - name: test connection
     ping:
+  - name: get vincent riviere repo key
+    become: true
+    apt_key:
+      url: http://vincent.riviere.free.fr/apt/vr-apt-key.txt
+      state: present
+
+  - name: add vincent riviere repo
+    become: true
+    apt_repository:
+      repo: deb [arch=amd64] http://vincent.riviere.free.fr/apt/ stretch contrib
+      state: present
+
+  - name: update repos and cache and install toolchain
+    become: true
+    apt:
+      name: "{{packages }}"
+    vars:
+      packages:
+      - cross-mint-essential
+      
+    
+        
+    
