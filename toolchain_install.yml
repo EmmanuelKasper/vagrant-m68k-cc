@@ -21,8 +21,52 @@
       name: "{{packages }}"
     vars:
       packages:
+      - mksh # for vagrant user, faster login and avoids creating a .bash_history in shared folder
       - cross-mint-essential
-      
-    
-        
-    
+
+  - name: create /etc/ssh/authorized_keys/
+    become: true
+    file:
+      path: /etc/ssh/authorized_keys
+      state: directory
+      owner: root
+      group: root
+      mode: 0755
+
+  - name: copy .ssh/authorized_keys in /etc/ssh/authorized_keys/
+    become: true
+    copy:
+      src: /home/vagrant/.ssh/authorized_keys
+      dest: /etc/ssh/authorized_keys/vagrant
+      remote_src: yes
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: set vagrant user home dir to /vagrant and set shell to mksh
+    become: true
+    lineinfile:
+      path: /etc/passwd
+      regexp: '^vagrant'
+      line: 'vagrant:x:1000:1000:Vagrant Default User,,,:/vagrant:/bin/mksh'
+      owner: root
+      group: root
+      mode: 0644
+
+  - name: move ssh key out of the home directory
+    become: true
+    notify:
+      - restart ssh daemon
+    lineinfile:
+      path: /etc/ssh/sshd_config
+      line: AuthorizedKeysFile  /etc/ssh/authorized_keys/%u
+      owner: root
+      group: root
+      mode: 0644
+
+  handlers:
+    - name: restart ssh daemon
+      become: true
+      service:
+        name: sshd
+        state: restarted
