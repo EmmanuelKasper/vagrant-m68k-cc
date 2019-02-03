@@ -1,8 +1,10 @@
 .POSIX:
+.PHONY: cleanall
 CC = vagrant ssh -- m68k-atari-mint-gcc
 CFLAGS = -O2 -Wl,--traditional-format
 
-.PHONY:
+all: manu.tos hello.tos
+
 cleanall:
 	rm *.tos
 
